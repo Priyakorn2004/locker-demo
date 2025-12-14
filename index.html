@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>บริการตู้ล็อกเกอร์อัจฉริยะ</title>
+    <link rel="stylesheet" href="styles.css"> </head>
+<body>
+    <div class="locker-container">
+        <h1>🔐 ตู้ล็อกเกอร์อัตโนมัติ </h1>
+        <p class="instruction">กรุณาใส่ **4 ตัวท้ายของเบอร์โทรศัพท์** ผู้รับเพื่อยืนยันการรับ/เปิด</p>
+        
+        <form id="verificationForm">
+            <div class="input-group">
+                <label for="last4Digits">4 ตัวท้ายเบอร์โทรศัพท์:</label>
+                <input 
+                    type="tel" 
+                    id="last4Digits" 
+                    name="last4Digits" 
+                    maxlength="4" 
+                    pattern="\d{4}" 
+                    required 
+                    placeholder="เช่น 1234">
+            </div>
+            
+            <button type="submit" id="submitBtn">ยืนยัน</button>
+        </form>
+        
+        <div id="message" class="hidden"></div> </div>
+
+    <script src="script.js"></script> </body>
+</html>
