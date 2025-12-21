@@ -1,61 +1,71 @@
-document.getElementById('verificationForm').addEventListener('submit', function(event) {
-    // ป้องกันการโหลดหน้าใหม่เมื่อกดปุ่ม
-    event.preventDefault(); 
+// นำ URL ที่คัดลอกมาจาก Google Apps Script ในขั้นตอนที่ 1 มาวางในเครื่องหมาย ' ' ด้านล่างนี้
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzuA1uxodV8EdTrIwz6M8WYpBLyfKzIPMSZI4rhkzz9YwSeOLcL2TA7D2oa24wgmErZ/exec'; 
+
+function switchPage(page) {
+    document.getElementById('roleSelection').classList.add('hidden');
+    document.getElementById('senderSection').classList.add('hidden');
+    document.getElementById('receiverSection').classList.add('hidden');
     
-    const last4DigitsInput = document.getElementById('last4Digits');
-    const last4Digits = last4DigitsInput.value.trim();
-    const messageDiv = document.getElementById('message');
-    
-    // ล้างข้อความเก่าและซ่อน
-    messageDiv.className = 'hidden'; 
-    messageDiv.textContent = '';
-
-    // การตรวจสอบความถูกต้องเบื้องต้น
-    if (last4Digits.length !== 4 || !/^\d{4}$/.test(last4Digits)) {
-        messageDiv.className = 'error';
-        messageDiv.textContent = 'กรุณาใส่ตัวเลข 4 หลักให้ถูกต้อง';
-        return;
-    }
-
-    // *** นี่คือส่วนที่คุณต้องเชื่อมต่อกับระบบตู้ล็อกเกอร์จริง ***
-    // ตัวอย่างการจำลองการส่งข้อมูลไปยังเซิร์ฟเวอร์
-    console.log(`Sending verification code: ${last4Digits}`);
-
-    // โดยปกติแล้ว คุณจะใช้ fetch() หรือ XMLHttpRequest เพื่อส่งค่าไปที่ API/Server
-    /*
-    fetch('/api/verify-locker-code', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ code: last4Digits })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            messageDiv.className = 'success';
-            messageDiv.textContent = 'ยืนยันสำเร็จ! ล็อกเกอร์หมายเลข A-05 ได้เปิดแล้ว กรุณานำของออก';
-            // อาจมีการเปลี่ยนหน้าจอ หรือส่งคำสั่งไปยังตู้ล็อกเกอร์ผ่าน WebSocket/API
-        } else {
-            messageDiv.className = 'error';
-            messageDiv.textContent = data.message || 'รหัสไม่ถูกต้องหรือไม่พบข้อมูลการจัดส่ง';
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        messageDiv.className = 'error';
-        messageDiv.textContent = 'เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง';
-    });
-    */
-
-    // ตัวอย่างการแสดงผลลัพธ์แบบจำลอง (Mock Success/Failure)
-    if (last4Digits === '1234') { 
-        // รหัสที่ถูกต้อง (จำลอง)
-        messageDiv.className = 'success';
-        messageDiv.textContent = 'ยืนยันสำเร็จ! ล็อกเกอร์หมายเลข A-05 ได้เปิดแล้ว กรุณานำของออก';
+    if(page === 'sender') {
+        document.getElementById('senderSection').classList.remove('hidden');
+        loadLockers();
+    } else if(page === 'receiver') {
+        document.getElementById('receiverSection').classList.remove('hidden');
     } else {
-        // รหัสที่ไม่ถูกต้อง (จำลอง)
-        messageDiv.className = 'error';
-        messageDiv.textContent = 'รหัส 4 ตัวท้ายไม่ถูกต้องหรือไม่พบข้อมูลการจัดส่ง';
+        document.getElementById('roleSelection').classList.remove('hidden');
     }
-});
+}
+
+function loadLockers() {
+    const list = document.getElementById('lockerList');
+    list.innerHTML = 'กำลังโหลดสถานะตู้...';
+    fetch(`${SCRIPT_URL}?action=checkStatus`)
+    .then(res => res.json())
+    .then(data => {
+        list.innerHTML = '';
+        data.forEach(item => {
+            const btn = document.createElement('button');
+            btn.className = 'locker-btn';
+            btn.innerHTML = `ตู้ที่ ${item.locker}<br><small>${item.status === 'Available' ? 'ว่าง' : 'เต็ม'}</small>`;
+            btn.disabled = item.status !== 'Available';
+            btn.onclick = () => {
+                selectedLocker = item.locker;
+                document.getElementById('displayLocker').innerText = item.locker;
+                document.getElementById('reserveForm').classList.remove('hidden');
+            };
+            list.appendChild(btn);
+        });
+    });
+}
+
+function submitReservation() {
+    const phone = document.getElementById('receiverPhone').value;
+    if(phone.length < 4) return alert('กรุณากรอกเบอร์ให้ครบ 4 ตัวท้าย');
+    
+    fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'reserve', locker: selectedLocker, phone: phone })
+    }).then(() => {
+        alert('ฝากของสำเร็จ!');
+        location.reload();
+    });
+}
+
+function searchLocker() {
+    const phone = document.getElementById('searchPhone').value;
+    const resultArea = document.getElementById('resultArea');
+    resultArea.innerHTML = 'กำลังค้นหา...';
+
+    fetch(`${SCRIPT_URL}?action=find&phone=${phone}`)
+    .then(res => res.json())
+    .then(data => {
+        if(data.found) {
+            resultArea.innerHTML = `<div style="background:#e8f5e9; padding:15px; margin-top:15px; border-radius:10px;">
+                <h3 style="color:#2e7d32;">พบข้อมูล!</h3>
+                <p>ของของคุณอยู่ที่ <strong>ตู้หมายเลข ${data.locker}</strong></p>
+            </div>`;
+        } else {
+            resultArea.innerHTML = `<p style="color:red; margin-top:15px;">ไม่พบข้อมูลของเบอร์นี้</p>`;
+        }
+    });
+}
