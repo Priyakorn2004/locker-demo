@@ -1,5 +1,4 @@
-// นำ URL ที่คัดลอกมาจาก Google Apps Script ในขั้นตอนที่ 1 มาวางในเครื่องหมาย ' ' ด้านล่างนี้
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzuA1uxodV8EdTrIwz6M8WYpBLyfKzIPMSZI4rhkzz9YwSeOLcL2TA7D2oa24wgmErZ/exec'; 
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzM-mx4N_t7bSF0W_VtXxpmusHsb3f5y5Wyw1D7XGwDcwy9w-d8N6-lAtZ1glaE1NZd/exec'; 
 
 function switchPage(page) {
     document.getElementById('roleSelection').classList.add('hidden');
