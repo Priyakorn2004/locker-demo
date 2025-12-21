@@ -3,39 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DropNLock</title>
+    <title>Smart Locker System</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <div id="roleSelection" class="card">
+    <div class="card">
+        <div id="roleSelection">
             <h1>🔐 Smart Locker</h1>
-            <p>กรุณาเลือกสถานะการใช้งาน</p>
-            <button class="btn btn-sender" onclick="switchPage('sender')">🚚 ผู้ส่งของ (ฝากของ)</button>
-            <button class="btn btn-receiver" onclick="switchPage('receiver')">🎁 ผู้รับของ (เช็คตู้)</button>
+            <button class="btn sender" onclick="switchPage('sender')">🚚 ผู้ส่งของ (ฝาก)</button>
+            <button class="btn receiver" onclick="switchPage('receiver')">🎁 ผู้รับของ (เช็คตู้)</button>
         </div>
 
-        <div id="senderSection" class="card hidden">
-            <button onclick="switchPage('home')" class="btn-back">⬅️ ย้อนกลับ</button>
-            <h2>ขั้นตอนที่ 1: เลือกตู้ที่ว่าง</h2>
-            <div id="lockerList" class="locker-grid"></div>
-            
+        <div id="senderSection" class="hidden">
+            <button onclick="switchPage('home')" class="back-btn">⬅️ กลับ</button>
+            <h2>เลือกตู้ที่ว่าง</h2>
+            <div id="lockerList" class="grid"></div>
             <div id="reserveForm" class="hidden">
-                <hr>
-                <h2>ขั้นตอนที่ 2: ระบุเบอร์ผู้รับ</h2>
-                <p>ตู้ที่เลือก: <strong id="displayLocker"></strong></p>
-                <input type="tel" id="receiverPhone" maxlength="4" placeholder="เบอร์โทร 4 ตัวท้าย">
-                <button class="btn btn-confirm" onclick="submitReservation()">ยืนยันการบันทึก</button>
+                <p>ตู้ที่เลือก: <strong id="selectedNum"></strong></p>
+                <input type="tel" id="phoneIn" maxlength="4" placeholder="เบอร์ผู้รับ 4 ตัว">
+                <button class="btn-confirm" onclick="confirmReserve()">ยืนยัน</button>
             </div>
         </div>
 
-        <div id="receiverSection" class="card hidden">
-            <button onclick="switchPage('home')" class="btn-back">⬅️ ย้อนกลับ</button>
-            <h2>🔍 ตรวจสอบพัสดุ</h2>
-            <p>กรอกเบอร์โทรศัพท์ 4 ตัวท้ายของคุณ</p>
-            <input type="tel" id="searchPhone" maxlength="4" placeholder="เช่น 1234">
-            <button class="btn btn-search" onclick="searchLocker()">ค้นหาตู้ของฉัน</button>
-            <div id="resultArea"></div>
+        <div id="receiverSection" class="hidden">
+            <button onclick="switchPage('home')" class="back-btn">⬅️ กลับ</button>
+            <h2>เช็คเลขตู้</h2>
+            <input type="tel" id="phoneSearch" maxlength="4" placeholder="เบอร์ของคุณ 4 ตัว">
+            <button class="btn-search" onclick="findMyLocker()">ค้นหา</button>
+            <div id="result"></div>
         </div>
     </div>
     <script src="script.js"></script>
