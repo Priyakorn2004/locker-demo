@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk-5zi6bmbGnj7XOhx87ft4yK32B1uBVwMstTe3_NHDso_1IhHxZ2neIv2AN-CQLnV/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyauBmmF0sGSjLG1gFhT8QQd5gBo8EaNboFv0RAWxwRxAuvcuTF35WBdxX-6E68_nWd/exec";
 let selectedLocker = null;
 
 // ฟังก์ชันสลับหน้า
@@ -11,7 +11,7 @@ function nav(page) {
     if (page === 'sender') loadLockers();
 }
 
-// ผู้ส่ง: โหลดสถานะตู้
+// ฝั่งผู้ส่ง: โหลดตู้
 async function loadLockers() {
     const grid = document.getElementById('lockerGrid');
     grid.innerHTML = "กำลังโหลด...";
@@ -33,22 +33,28 @@ async function loadLockers() {
         });
     } catch (err) {
         grid.innerHTML = "<p style='color:red'>โหลดข้อมูลไม่สำเร็จ</p>";
+        console.error(err);
     }
 }
 
-// ผู้ส่ง: ยืนยันการฝาก
+// ฝั่งผู้ส่ง: ยืนยันฝากของ
 async function doReserve() {
     const phone = document.getElementById('phoneInput').value;
     if (phone.length < 4) return alert("กรุณากรอกเบอร์ 4 ตัวท้าย");
-    await fetch(SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: "reserve", locker: selectedLocker, phone: phone })
-    });
-    alert("ฝากของสำเร็จ!");
-    location.reload();
+    
+    try {
+        await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "reserve", locker: selectedLocker, phone: phone })
+        });
+        alert("ฝากของสำเร็จ!");
+        location.reload();
+    } catch (err) {
+        alert("เกิดข้อผิดพลาดในการบันทึก");
+    }
 }
 
-// ผู้รับ: ค้นหาพัสดุ
+// ฝั่งผู้รับ: ค้นหาพัสดุ
 async function doSearch() {
     const phone = document.getElementById('phoneSearch').value;
     const resDiv = document.getElementById('searchResult');
@@ -58,10 +64,12 @@ async function doSearch() {
     try {
         const res = await fetch(`${SCRIPT_URL}?action=find&phone=${phone}`);
         const data = await res.json();
-        resDiv.innerHTML = data.found 
-            ? `<div class='success'>✅ พบของที่ตู้หมายเลข ${data.locker}</div>`
-            : `<div class='error'>❌ ไม่พบข้อมูลพัสดุ</div>`;
+        if (data.found) {
+            resDiv.innerHTML = `<div style="color:green; padding:15px; background:#e8f5e9; border-radius:10px; margin-top:10px;">✅ พบของที่ตู้หมายเลข ${data.locker}</div>`;
+        } else {
+            resDiv.innerHTML = `<div style="color:red; margin-top:10px;">❌ ไม่พบข้อมูลสำหรับเบอร์นี้</div>`;
+        }
     } catch (err) {
-        resDiv.innerHTML = "เกิดข้อผิดพลาดในการค้นหา";
+        resDiv.innerHTML = "เกิดข้อผิดพลาดในการเชื่อมต่อ";
     }
 }
