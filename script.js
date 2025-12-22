@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzme07rFltXOCW2N6NbGxXP8hNPKJsQJcEwrCcA0EPLhHiwiEsDdAzoJ-e3W1osBOFp/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAelgjHX4VSewLfG6-wV3TgPDFrOlf_pKRQujcSAdSLcu_SK465ie3n2TRN74QpdQb/exec";
 
 function loadLockers() {
     const grid = document.getElementById('lockerGrid');
