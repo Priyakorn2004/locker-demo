@@ -7,30 +7,33 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="card">
-        <div id="roleSelection">
+    <div class="container">
+        <div id="homePage" class="card">
             <h1>🔐 Smart Locker</h1>
-            <button class="btn sender" onclick="switchPage('sender')">🚚 ผู้ส่งของ (ฝาก)</button>
-            <button class="btn receiver" onclick="switchPage('receiver')">🎁 ผู้รับของ (เช็คตู้)</button>
+            <p>กรุณาเลือกสถานะการใช้งาน</p>
+            <button class="btn sender" onclick="nav('sender')">🚚 สำหรับผู้ส่ง (ฝากของ)</button>
+            <button class="btn receiver" onclick="nav('receiver')">🎁 สำหรับผู้รับ (เช็คตู้)</button>
         </div>
 
-        <div id="senderSection" class="hidden">
-            <button onclick="switchPage('home')" class="back-btn">⬅️ กลับ</button>
+        <div id="senderPage" class="card hidden">
+            <button onclick="nav('home')" class="back-btn">⬅️ กลับหน้าแรก</button>
             <h2>เลือกตู้ที่ว่าง</h2>
-            <div id="lockerList" class="grid"></div>
+            <div id="lockerGrid" class="grid"></div>
+            
             <div id="reserveForm" class="hidden">
-                <p>ตู้ที่เลือก: <strong id="selectedNum"></strong></p>
-                <input type="tel" id="phoneIn" maxlength="4" placeholder="เบอร์ผู้รับ 4 ตัว">
-                <button class="btn-confirm" onclick="confirmReserve()">ยืนยัน</button>
+                <hr>
+                <p>ฝากที่: <strong>ตู้หมายเลข <span id="targetLocker"></span></strong></p>
+                <input type="tel" id="phoneInput" maxlength="4" placeholder="เบอร์โทรผู้รับ 4 ตัวท้าย">
+                <button class="btn-confirm" onclick="doReserve()">ยืนยันการบันทึก</button>
             </div>
         </div>
 
-        <div id="receiverSection" class="hidden">
-            <button onclick="switchPage('home')" class="back-btn">⬅️ กลับ</button>
-            <h2>เช็คเลขตู้</h2>
-            <input type="tel" id="phoneSearch" maxlength="4" placeholder="เบอร์ของคุณ 4 ตัว">
-            <button class="btn-search" onclick="findMyLocker()">ค้นหา</button>
-            <div id="result"></div>
+        <div id="receiverPage" class="card hidden">
+            <button onclick="nav('home')" class="back-btn">⬅️ กลับหน้าแรก</button>
+            <h2>🔍 ตรวจสอบพัสดุ</h2>
+            <input type="tel" id="phoneSearch" maxlength="4" placeholder="กรอกเบอร์ของคุณ 4 ตัวท้าย">
+            <button class="btn-search" onclick="doSearch()">ค้นหาตู้ของฉัน</button>
+            <div id="searchResult"></div>
         </div>
     </div>
     <script src="script.js"></script>
