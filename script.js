@@ -1,25 +1,23 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZkv4XWh9fnOpIAtBgi__ussggG3Y_WA-bZl8SVc8E-6mSHju14tApC-UhwWq-_zzP/exec";
-let currentLocker = null;
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk-5zi6bmbGnj7XOhx87ft4yK32B1uBVwMstTe3_NHDso_1IhHxZ2neIv2AN-CQLnV/exec";
+let selectedLocker = null;
 
+// ฟังก์ชันสลับหน้า
 function nav(page) {
     document.getElementById('homePage').classList.add('hidden');
     document.getElementById('senderPage').classList.add('hidden');
     document.getElementById('receiverPage').classList.add('hidden');
     
-    const target = document.getElementById(page + 'Page') || document.getElementById('homePage');
-    target.classList.remove('hidden');
-    
-    if (page === 'sender') getLockerStatus();
+    document.getElementById(page + 'Page').classList.remove('hidden');
+    if (page === 'sender') loadLockers();
 }
 
-async function getLockerStatus() {
+// ผู้ส่ง: โหลดสถานะตู้
+async function loadLockers() {
     const grid = document.getElementById('lockerGrid');
-    grid.innerHTML = "กำลังเช็คสถานะ...";
-    
+    grid.innerHTML = "กำลังโหลด...";
     try {
         const res = await fetch(SCRIPT_URL + "?action=checkStatus");
         const data = await res.json();
-        
         grid.innerHTML = "";
         data.forEach(item => {
             const btn = document.createElement('button');
@@ -27,30 +25,43 @@ async function getLockerStatus() {
             btn.innerHTML = `ตู้ ${item.locker}<br><span>${item.status === 'Available' ? 'ว่าง' : 'เต็ม'}</span>`;
             btn.disabled = item.status !== 'Available';
             btn.onclick = () => {
-                currentLocker = item.locker;
+                selectedLocker = item.locker;
                 document.getElementById('targetLocker').innerText = item.locker;
                 document.getElementById('reserveForm').classList.remove('hidden');
             };
             grid.appendChild(btn);
         });
     } catch (err) {
-        grid.innerHTML = `<div class="error-box">โหลดข้อมูลไม่สำเร็จ กรุณารีเฟรชหน้าเว็บ</div>`;
-        console.error(err);
+        grid.innerHTML = "<p style='color:red'>โหลดข้อมูลไม่สำเร็จ</p>";
     }
 }
 
+// ผู้ส่ง: ยืนยันการฝาก
 async function doReserve() {
     const phone = document.getElementById('phoneInput').value;
-    if (phone.length < 4) return alert("กรุณากรอกเบอร์ให้ครบ 4 ตัว");
+    if (phone.length < 4) return alert("กรุณากรอกเบอร์ 4 ตัวท้าย");
+    await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "reserve", locker: selectedLocker, phone: phone })
+    });
+    alert("ฝากของสำเร็จ!");
+    location.reload();
+}
 
+// ผู้รับ: ค้นหาพัสดุ
+async function doSearch() {
+    const phone = document.getElementById('phoneSearch').value;
+    const resDiv = document.getElementById('searchResult');
+    if (phone.length < 4) return alert("กรุณากรอกเบอร์ 4 ตัวท้าย");
+    
+    resDiv.innerHTML = "กำลังค้นหา...";
     try {
-        await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: "reserve", locker: currentLocker, phone: phone })
-        });
-        alert("ฝากของสำเร็จ!");
-        location.reload();
+        const res = await fetch(`${SCRIPT_URL}?action=find&phone=${phone}`);
+        const data = await res.json();
+        resDiv.innerHTML = data.found 
+            ? `<div class='success'>✅ พบของที่ตู้หมายเลข ${data.locker}</div>`
+            : `<div class='error'>❌ ไม่พบข้อมูลพัสดุ</div>`;
     } catch (err) {
-        alert("เกิดข้อผิดพลาดในการบันทึก");
+        resDiv.innerHTML = "เกิดข้อผิดพลาดในการค้นหา";
     }
 }
