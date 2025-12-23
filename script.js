@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwDZbPSv6QxEiZrCN8sVfLwy4S4LwhrxqmSDYWmMgysTCWErNg8mU_4iNPuhyrdWPjJNw/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxC-XuK5ESm0SwmuY8OLZQ0FuD2lxNxVQD5n1QCLNo-Dm_Xc8L3IKBKp49_9llNsfvB7w/exec";
 let selectedLocker = null;
 
 function nav(page) {
