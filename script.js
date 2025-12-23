@@ -1,17 +1,12 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyauBmmF0sGSjLG1gFhT8QQd5gBo8EaNboFv0RAWxwRxAuvcuTF35WBdxX-6E68_nWd/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby2vsLWVrgtXaKENSKqziteDOTBpoGRIy5KyVJNO0QlkQe6xgYKwZfRK7S1UMP-zrc5/exec";
 let selectedLocker = null;
 
-// ฟังก์ชันสลับหน้า
 function nav(page) {
-    document.getElementById('homePage').classList.add('hidden');
-    document.getElementById('senderPage').classList.add('hidden');
-    document.getElementById('receiverPage').classList.add('hidden');
-    
+    document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
     document.getElementById(page + 'Page').classList.remove('hidden');
     if (page === 'sender') loadLockers();
 }
 
-// ฝั่งผู้ส่ง: โหลดตู้
 async function loadLockers() {
     const grid = document.getElementById('lockerGrid');
     grid.innerHTML = "กำลังโหลด...";
@@ -21,8 +16,9 @@ async function loadLockers() {
         grid.innerHTML = "";
         data.forEach(item => {
             const btn = document.createElement('button');
-            btn.className = `l-btn ${item.status}`;
-            btn.innerHTML = `ตู้ ${item.locker}<br><span>${item.status === 'Available' ? 'ว่าง' : 'เต็ม'}</span>`;
+            // กำหนดสีปุ่มตามสถานะ
+            btn.className = `l-btn ${item.status === 'Available' ? 'available' : 'occupied'}`;
+            btn.innerHTML = `ตู้ ${item.locker}<br><span>${item.status === 'Available' ? '✅ ว่าง' : '❌ เต็ม'}</span>`;
             btn.disabled = item.status !== 'Available';
             btn.onclick = () => {
                 selectedLocker = item.locker;
@@ -31,45 +27,38 @@ async function loadLockers() {
             };
             grid.appendChild(btn);
         });
-    } catch (err) {
-        grid.innerHTML = "<p style='color:red'>โหลดข้อมูลไม่สำเร็จ</p>";
-        console.error(err);
-    }
+    } catch (err) { grid.innerHTML = "เกิดข้อผิดพลาดในการดึงข้อมูล"; }
 }
 
-// ฝั่งผู้ส่ง: ยืนยันฝากของ
 async function doReserve() {
     const phone = document.getElementById('phoneInput').value;
-    if (phone.length < 4) return alert("กรุณากรอกเบอร์ 4 ตัวท้าย");
-    
-    try {
-        await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: "reserve", locker: selectedLocker, phone: phone })
-        });
-        alert("ฝากของสำเร็จ!");
-        location.reload();
-    } catch (err) {
-        alert("เกิดข้อผิดพลาดในการบันทึก");
-    }
+    if (phone.length < 4) return alert("กรอกเบอร์ 4 ตัวท้าย");
+    await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "reserve", locker: selectedLocker, phone: phone }) });
+    alert("ฝากของสำเร็จ!"); 
+    location.reload();
 }
 
-// ฝั่งผู้รับ: ค้นหาพัสดุ
 async function doSearch() {
     const phone = document.getElementById('phoneSearch').value;
     const resDiv = document.getElementById('searchResult');
-    if (phone.length < 4) return alert("กรุณากรอกเบอร์ 4 ตัวท้าย");
-    
+    if (phone.length < 4) return alert("กรอกเบอร์ 4 ตัวท้าย");
     resDiv.innerHTML = "กำลังค้นหา...";
     try {
         const res = await fetch(`${SCRIPT_URL}?action=find&phone=${phone}`);
         const data = await res.json();
         if (data.found) {
-            resDiv.innerHTML = `<div style="color:green; padding:15px; background:#e8f5e9; border-radius:10px; margin-top:10px;">✅ พบของที่ตู้หมายเลข ${data.locker}</div>`;
-        } else {
-            resDiv.innerHTML = `<div style="color:red; margin-top:10px;">❌ ไม่พบข้อมูลสำหรับเบอร์นี้</div>`;
+            resDiv.innerHTML = `
+                <div class='success-box'>✅ พบของที่ตู้หมายเลข ${data.locker}<br><br>
+                <button class="btn-confirm" style="background:#27ae60" onclick="clearLocker('${data.locker}')">ยืนยันรับของแล้ว</button></div>`;
+        } else { 
+            resDiv.innerHTML = "<div class='error-box'>❌ ไม่พบข้อมูลพัสดุสำหรับเบอร์นี้</div>"; 
         }
-    } catch (err) {
-        resDiv.innerHTML = "เกิดข้อผิดพลาดในการเชื่อมต่อ";
-    }
+    } catch (err) { resDiv.innerHTML = "เชื่อมต่อผิดพลาด"; }
+}
+
+async function clearLocker(num) {
+    if(!confirm("ยืนยันรับของเรียบร้อย? ระบบจะล้างสถานะตู้นี้ให้กลับมาว่าง")) return;
+    await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "clear", locker: num }) });
+    alert("รับของเรียบร้อย ตู้ว่างพร้อมใช้งานต่อแล้วครับ"); 
+    location.reload();
 }
