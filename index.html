@@ -1,31 +1,33 @@
------------------------------------------------------------------------------------------------p--<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Locker</title>
+    <title>Smart Locker System</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <div id="homePage" class="card">
             <h1>🔐 Smart Locker</h1>
+            <p>กรุณาเลือกสถานะการใช้งาน</p>
             <button class="btn sender" onclick="nav('sender')">🚚 สำหรับผู้ส่ง (ฝากของ)</button>
             <button class="btn receiver" onclick="nav('receiver')">🎁 สำหรับผู้รับ (เช็คตู้)</button>
         </div>
 
-        <div id="senderPage" class="card hidden">
+        <div id="senderPage" class="card" style="display:none;">
             <button onclick="nav('home')" class="back-btn">⬅️ กลับหน้าแรก</button>
             <h2>เลือกตู้ที่ว่าง</h2>
             <div id="lockerGrid" class="grid"></div>
-            <div id="reserveForm" class="hidden">
+            <div id="reserveForm" style="display:none;">
+                <hr>
                 <p>ฝากที่ตู้หมายเลข: <span id="targetLocker"></span></p>
-                <input type="tel" id="phoneInput" maxlength="4" placeholder="เบอร์โทร 4 ตัวท้าย">
-                <button class="btn-confirm" onclick="doReserve()">ยืนยันการฝาก</button>
+                <input type="tel" id="phoneInput" maxlength="4" placeholder="เบอร์โทรผู้รับ 4 ตัวท้าย">
+                <button class="btn-confirm" onclick="doReserve()">ยืนยันการบันทึก</button>
             </div>
         </div>
 
-        <div id="receiverPage" class="card hidden">
+        <div id="receiverPage" class="card" style="display:none;">
             <button onclick="nav('home')" class="back-btn">⬅️ กลับหน้าแรก</button>
             <h2>🔍 ตรวจสอบพัสดุ</h2>
             <input type="tel" id="phoneSearch" maxlength="4" placeholder="กรอกเบอร์โทร 4 ตัวท้าย">

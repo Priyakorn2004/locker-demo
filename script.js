@@ -1,16 +1,15 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUwSwWjnvYb9c6EeOX9mC2ZWoaRMx5Nn0a0ylhgdjOwd63TAvGyNOMRjnp3N9pfrKy/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwj6MGkiZ-W8dFBiwAOb1-CLxwz2AE4K168D_ggIidTJopzES04PPJSBqSs3hfbbmmkbg/exec";
 let selectedLocker = null;
 
 function nav(page) {
-    document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
-    document.getElementById(page + 'Page').classList.remove('hidden');
+    document.querySelectorAll('.card').forEach(c => c.style.display = 'none');
+    document.getElementById(page + 'Page').style.display = 'block';
     if (page === 'sender') loadLockers();
 }
 
-// 🚚 สำหรับผู้ส่ง: แสดงตู้ว่าง/เต็ม
 async function loadLockers() {
     const grid = document.getElementById('lockerGrid');
-    grid.innerHTML = "กำลังโหลดข้อมูล...";
+    grid.innerHTML = "<p>กำลังโหลดสถานะตู้...</p>";
     try {
         const res = await fetch(SCRIPT_URL + "?action=checkStatus");
         const data = await res.json();
@@ -23,14 +22,13 @@ async function loadLockers() {
             btn.onclick = () => {
                 selectedLocker = item.locker;
                 document.getElementById('targetLocker').innerText = item.locker;
-                document.getElementById('reserveForm').classList.remove('hidden');
+                document.getElementById('reserveForm').style.display = 'block';
             };
             grid.appendChild(btn);
         });
-    } catch (err) { grid.innerHTML = "<p style='color:red'>โหลดข้อมูลล้มเหลว</p>"; }
+    } catch (err) { grid.innerHTML = "<p style='color:red'>โหลดข้อมูลไม่สำเร็จ</p>"; }
 }
 
-// 🚚 สำหรับผู้ส่ง: กดบันทึกการฝาก
 async function doReserve() {
     const phone = document.getElementById('phoneInput').value;
     if (phone.length < 4) return alert("กรุณากรอกเบอร์ 4 ตัวท้าย");
@@ -38,9 +36,8 @@ async function doReserve() {
     alert("ฝากของสำเร็จ!"); location.reload();
 }
 
-// 🎁 สำหรับผู้รับ: ค้นหาและ "ยืนยันรับของ"
 async function doSearch() {
-    const phone = document.getElementById('phoneSearch').value;
+    const phone = document.getElementById('phoneSearch').value; //
     const resDiv = document.getElementById('searchResult');
     if (phone.length < 4) return alert("กรุณากรอกเบอร์ 4 ตัวท้าย");
     resDiv.innerHTML = "กำลังค้นหา...";
@@ -48,23 +45,18 @@ async function doSearch() {
         const res = await fetch(`${SCRIPT_URL}?action=find&phone=${phone}`);
         const data = await res.json();
         if (data.found) {
-            // สร้างปุ่มยืนยันรับของเพื่อลบข้อมูล
             resDiv.innerHTML = `
-                <div style="background:#e8f5e9; padding:20px; border-radius:12px; margin-top:15px;">
-                    <h3 style="color:#2e7d32">✅ พบพัสดุของคุณ!</h3>
+                <div class="res-box success">
+                    <h3>✅ พบพัสดุของคุณ!</h3>
                     <p>อยู่ที่ตู้หมายเลข: <strong>${data.locker}</strong></p>
-                    <button class="btn-search" style="background:#27ae60; margin-top:10px;" 
-                            onclick="clearLocker('${data.locker}')">
-                        📦 ยืนยันรับของเรียบร้อย
-                    </button>
+                    <button class="btn-clear" onclick="clearLocker('${data.locker}')">📦 ยืนยันรับของเรียบร้อย</button>
                 </div>`;
-        } else { resDiv.innerHTML = "<p style='color:red; margin-top:15px;'>❌ ไม่พบข้อมูลสำหรับเบอร์นี้</p>"; }
-    } catch (err) { resDiv.innerHTML = "เชื่อมต่อผิดพลาด"; }
+        } else { resDiv.innerHTML = "<div class='res-box error'>❌ ไม่พบข้อมูลพัสดุสำหรับเบอร์นี้</div>"; }
+    } catch (err) { resDiv.innerHTML = "<p style='color:red'>เชื่อมต่อผิดพลาด</p>"; }
 }
 
-// 🎁 สำหรับผู้รับ: สั่งลบข้อมูลใน Google Sheets
 async function clearLocker(num) {
-    if(!confirm("ยืนยันการรับของ? ระบบจะล้างเบอร์โทรและคืนสถานะตู้ว่าง")) return;
+    if(!confirm("ยืนยันว่าได้รับของแล้ว? ระบบจะล้างสถานะตู้นี้ให้กลับมาว่าง")) return;
     await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "clear", locker: num }) });
-    alert("รับของเสร็จสิ้น ตู้วางพร้อมใช้งานต่อแล้ว"); location.reload();
+    alert("รับของเรียบร้อย ตู้ว่างพร้อมใช้งานต่อแล้ว"); location.reload();
 }
