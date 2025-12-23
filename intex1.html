@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Locker System</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; text-align: center; background-color: #f4f4f9; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        .hidden { display: none; }
+        .btn-main { padding: 15px 30px; font-size: 18px; margin: 10px; cursor: pointer; border: none; border-radius: 5px; background-color: #007bff; color: white; }
+        .btn-success { background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 18px; margin-top: 15px; }
+        .btn-back { background-color: #6c757d; margin-top: 20px; padding: 10px 20px; color: white; border: none; border-radius: 5px; cursor: pointer;}
+        
+        .locker-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 20px; }
+        .l-btn { padding: 20px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; transition: 0.3s; width: 100%; }
+        
+        .Available { background-color: #28a745; color: white; cursor: pointer; }
+        .Available:hover { background-color: #218838; transform: scale(1.05); }
+        .Occupied { background-color: #dc3545; color: white; cursor: not-allowed; opacity: 0.7; }
+        
+        input { padding: 10px; font-size: 16px; width: 80%; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
+        .status-box { margin-top: 15px; padding: 15px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div id="homePage">
+        <h1>📦 ระบบสมาร์ทล็อคเกอร์</h1>
+        <button class="btn-main" onclick="nav('sender')">ฝากของ (ผู้ส่ง)</button>
+        <button class="btn-main" style="background-color: #ffc107; color: #000;" onclick="nav('receiver')">รับของ (ผู้รับ)</button>
+    </div>
+
+    <div id="senderPage" class="hidden">
+        <h2>เลือกตู้ที่ต้องการฝาก</h2>
+        <div id="lockerGrid" class="locker-grid">กำลังโหลดข้อมูล...</div>
+
+        <div id="reserveForm" class="hidden" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+            <h3>ยืนยันฝากตู้: <span id="targetLocker" style="color:blue"></span></h3>
+            <input type="tel" id="phoneInput" placeholder="เบอร์โทรผู้รับ (4 ตัวท้าย)" maxlength="10">
+            <br>
+            <button class="btn-main" style="background-color: #28a745;" onclick="doReserve()">ยืนยันการฝาก</button>
+        </div>
+        <button class="btn-back" onclick="nav('home')">กลับหน้าหลัก</button>
+    </div>
+
+    <div id="receiverPage" class="hidden">
+        <h2>🔍 ค้นหาพัสดุของคุณ</h2>
+        <p>กรอกเบอร์โทรศัพท์เพื่อค้นหาตู้เก็บของ</p>
+        <input type="tel" id="phoneSearch" placeholder="เบอร์โทรศัพท์">
+        <br>
+        <button class="btn-main" onclick="doSearch()">ค้นหา</button>
+        <div id="searchResult"></div>
+        <button class="btn-back" onclick="nav('home')">กลับหน้าหลัก</button>
+    </div>
+
+</div>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyYeqP-Zwcg2q44hb2hIcUTBxJ3bZSNgvFuEgj86C_qDJztKReJdNn7MU72cFIyMQ9fUA/exec"; 
+
+    let selectedLocker = null;
+
+    function nav(page) {
+        document.getElementById('homePage').classList.add('hidden');
+        document.getElementById('senderPage').classList.add('hidden');
+        document.getElementById('receiverPage').classList.add('hidden');
+        document.getElementById('reserveForm').classList.add('hidden');
+        
+        // ล้างข้อมูลในช่อง Input เมื่อเปลี่ยนหน้า
+        document.getElementById('phoneInput').value = '';
+        document.getElementById('phoneSearch').value = '';
+        document.getElementById('searchResult').innerHTML = '';
+
+        if (page === 'home') document.getElementById('homePage').classList.remove('hidden');
+        if (page === 'sender') {
+            document.getElementById('senderPage').classList.remove('hidden');
+            loadLockers();
+        }
+        if (page === 'receiver') document.getElementById('receiverPage').classList.remove('hidden');
+    }
+
+    async function loadLockers() {
+        const grid = document.getElementById('lockerGrid');
+        grid.innerHTML = "กำลังโหลดข้อมูล...";
+        try {
+            const res = await fetch(SCRIPT_URL + "?action=checkStatus");
+            const data = await res.json();
+            grid.innerHTML = "";
+            data.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = `l-btn ${item.status}`;
+                btn.innerHTML = `ตู้ ${item.locker}<br><span style="font-size:12px">${item.status === 'Available' ? 'ว่าง' : 'ไม่ว่าง'}</span>`;
+                btn.disabled = item.status !== 'Available';
+                if (item.status === 'Available') {
+                    btn.onclick = () => {
+                        selectedLocker = item.locker;
+                        document.getElementById('targetLocker').innerText = item.locker;
+                        document.getElementById('reserveForm').classList.remove('hidden');
+                        document.getElementById('reserveForm').scrollIntoView({behavior: 'smooth'});
+                    };
+                }
+                grid.appendChild(btn);
+            });
+        } catch (err) {
+            grid.innerHTML = "<p style='color:red'>ไม่สามารถเชื่อมต่อระบบได้</p>";
+        }
+    }
+
+    async function doReserve() {
+        const phone = document.getElementById('phoneInput').value;
+        if (!/^\d{4,}$/.test(phone)) return alert("กรุณากรอกเบอร์โทรตัวเลขอย่างน้อย 4 ตัว");
+        
+        const btn = event.target;
+        btn.innerText = "กำลังบันทึก...";
+        btn.disabled = true;
+
+        try {
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                redirect: 'follow',
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ action: "reserve", locker: selectedLocker, phone: phone })
+            });
+            alert("✅ ฝากของสำเร็จ!");
+            nav('home');
+        } catch (err) {
+            alert("❌ เกิดข้อผิดพลาด");
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    async function doSearch() {
+        const phone = document.getElementById('phoneSearch').value;
+        const resDiv = document.getElementById('searchResult');
+        if (phone.length < 4) return alert("กรุณากรอกเบอร์อย่างน้อย 4 ตัว");
+        resDiv.innerHTML = "⏳ กำลังค้นหา...";
+        
+        try {
+            const res = await fetch(`${SCRIPT_URL}?action=find&phone=${phone}`);
+            const data = await res.json();
+            if (data.found) {
+                resDiv.innerHTML = `
+                    <div class="status-box" style="background:#d4edda; color:#155724; border:1px solid #c3e6cb;">
+                        <h2>📦 พบพัสดุ!</h2>
+                        <p style="font-size:20px;">อยู่ที่ <strong>ตู้หมายเลข ${data.locker}</strong></p>
+                        <button class="btn-success" onclick="doComplete('${data.locker}')">✅ ยืนยันการรับของเสร็จแล้ว</button>
+                    </div>
+                `;
+            } else {
+                resDiv.innerHTML = `<div class="status-box" style="background:#f8d7da; color:#721c24; border:1px solid #f5c6cb;">❌ ไม่พบพัสดุสำหรับเบอร์นี้</div>`;
+            }
+        } catch (err) {
+            resDiv.innerHTML = "<p style='color:red'>เกิดข้อผิดพลาดในการเชื่อมต่อ</p>";
+        }
+    }
+
+    // ฟังก์ชันใหม่สำหรับยืนยันรับของและล้างข้อมูลตู้
+    async function doComplete(lockerNo) {
+        if (!confirm(`คุณต้องการยืนยันการรับของจากตู้ ${lockerNo} และล้างข้อมูลใช่หรือไม่?`)) return;
+
+        const resDiv = document.getElementById('searchResult');
+        resDiv.innerHTML = "⏳ กำลังอัปเดตสถานะตู้...";
+
+        try {
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                redirect: 'follow',
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ action: "complete", locker: lockerNo })
+            });
+            alert("✅ รับของเรียบร้อยแล้ว ตู้หมายเลข " + lockerNo + " พร้อมใช้งานต่อ");
+            nav('home'); // ล้างข้อมูลหน้าจอและกลับหน้าหลัก
+        } catch (err) {
+            alert("❌ เกิดข้อผิดพลาดในการอัปเดตสถานะ");
+            console.error(err);
+        }
+    }
+</script>
+
+</body>
+</html>
