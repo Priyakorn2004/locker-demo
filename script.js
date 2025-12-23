@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwj6MGkiZ-W8dFBiwAOb1-CLxwz2AE4K168D_ggIidTJopzES04PPJSBqSs3hfbbmmkbg/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwDZbPSv6QxEiZrCN8sVfLwy4S4LwhrxqmSDYWmMgysTCWErNg8mU_4iNPuhyrdWPjJNw/exec";
 let selectedLocker = null;
 
 function nav(page) {
@@ -37,7 +37,7 @@ async function doReserve() {
 }
 
 async function doSearch() {
-    const phone = document.getElementById('phoneSearch').value; //
+    const phone = document.getElementById('phoneSearch').value;
     const resDiv = document.getElementById('searchResult');
     if (phone.length < 4) return alert("กรุณากรอกเบอร์ 4 ตัวท้าย");
     resDiv.innerHTML = "กำลังค้นหา...";
@@ -51,7 +51,7 @@ async function doSearch() {
                     <p>อยู่ที่ตู้หมายเลข: <strong>${data.locker}</strong></p>
                     <button class="btn-clear" onclick="clearLocker('${data.locker}')">📦 ยืนยันรับของเรียบร้อย</button>
                 </div>`;
-        } else { resDiv.innerHTML = "<div class='res-box error'>❌ ไม่พบข้อมูลพัสดุสำหรับเบอร์นี้</div>"; }
+        } else { resDiv.innerHTML = "<div class='res-box error'>❌ ไม่พบข้อมูลพัสดุ</div>"; }
     } catch (err) { resDiv.innerHTML = "<p style='color:red'>เชื่อมต่อผิดพลาด</p>"; }
 }
 

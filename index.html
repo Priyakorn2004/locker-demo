@@ -10,28 +10,26 @@
     <div class="container">
         <div id="homePage" class="card">
             <h1>🔐 Smart Locker</h1>
-            <p>กรุณาเลือกสถานะการใช้งาน</p>
             <button class="btn sender" onclick="nav('sender')">🚚 สำหรับผู้ส่ง (ฝากของ)</button>
             <button class="btn receiver" onclick="nav('receiver')">🎁 สำหรับผู้รับ (เช็คตู้)</button>
         </div>
 
         <div id="senderPage" class="card" style="display:none;">
-            <button onclick="nav('home')" class="back-btn">⬅️ กลับหน้าแรก</button>
+            <button onclick="nav('home')">⬅️ กลับหน้าแรก</button>
             <h2>เลือกตู้ที่ว่าง</h2>
             <div id="lockerGrid" class="grid"></div>
             <div id="reserveForm" style="display:none;">
-                <hr>
                 <p>ฝากที่ตู้หมายเลข: <span id="targetLocker"></span></p>
-                <input type="tel" id="phoneInput" maxlength="4" placeholder="เบอร์โทรผู้รับ 4 ตัวท้าย">
-                <button class="btn-confirm" onclick="doReserve()">ยืนยันการบันทึก</button>
+                <input type="tel" id="phoneInput" maxlength="4" placeholder="เบอร์โทร 4 ตัวท้าย">
+                <button onclick="doReserve()">ยืนยันการฝาก</button>
             </div>
         </div>
 
         <div id="receiverPage" class="card" style="display:none;">
-            <button onclick="nav('home')" class="back-btn">⬅️ กลับหน้าแรก</button>
+            <button onclick="nav('home')">⬅️ กลับหน้าแรก</button>
             <h2>🔍 ตรวจสอบพัสดุ</h2>
-            <input type="tel" id="phoneSearch" maxlength="4" placeholder="กรอกเบอร์โทร 4 ตัวท้าย">
-            <button class="btn-search" onclick="doSearch()">ค้นหาตู้ของฉัน</button>
+            <input type="tel" id="phoneSearch" maxlength="4" placeholder="เบอร์โทร 4 ตัวท้าย">
+            <button onclick="doSearch()">ค้นหาตู้ของฉัน</button>
             <div id="searchResult"></div>
         </div>
     </div>
