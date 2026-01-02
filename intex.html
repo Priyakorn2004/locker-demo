@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Locker Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- CSS: ส่วนตกแต่งเว็บ --- */
+        body { 
+            font-family: 'Sarabun', sans-serif; 
+            background-color: #f0f2f5; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+        }
+
+        .container { 
+            width: 100%; 
+            max-width: 420px; 
+            position: relative; 
+        }
+
+        .card { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            text-align: center;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 { color: #2c3e50; margin-bottom: 5px; font-size: 26px; }
+        h2 { color: #34495e; font-size: 20px; margin-bottom: 20px; }
+        p { color: #7f8c8d; margin-bottom: 25px; font-size: 14px; }
+
+        input { 
+            width: 100%; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border: 2px solid #ecf0f1; 
+            border-radius: 12px; 
+            font-size: 18px; 
+            text-align: center; 
+            box-sizing: border-box; 
+            transition: 0.3s;
+            outline: none;
+            font-family: 'Sarabun', sans-serif;
+        }
+        
+        input:focus { border-color: #3498db; }
+
+        button { 
+            width: 100%; 
+            padding: 15px; 
+            margin-top: 10px; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: bold; 
+            color: white; 
+            transition: 0.2s; 
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        button:active { transform: scale(0.98); }
+
+        /* สีปุ่มต่างๆ */
+        .btn-main { background: #2c3e50; box-shadow: 0 4px 0 #1a252f; }
+        .btn-sender { background: #e67e22; box-shadow: 0 4px 0 #d35400; margin-bottom: 15px; }
+        .btn-receiver { background: #3498db; box-shadow: 0 4px 0 #2980b9; }
+        .btn-confirm { background: #27ae60; box-shadow: 0 4px 0 #219150; }
+        .btn-back { background: transparent; color: #95a5a6; font-size: 14px; width: auto; box-shadow: none; margin-top: 20px; }
+        .btn-back:hover { color: #7f8c8d; text-decoration: underline; }
+
+        /* Grid ตู้ */
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+        .l-btn { 
+            padding: 15px; 
+            border-radius: 12px; 
+            border: 2px solid #eee; 
+            background: white; 
+            color: #333; 
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .l-btn.available { background: #e8f5e9; border-color: #2ecc71; color: #27ae60; }
+        .l-btn.available:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(46, 204, 113, 0.2); }
+        .l-btn.occupied { background: #ffebee; border-color: #e74c3c; color: #c0392b; cursor: not-allowed; opacity: 0.6; }
+
+        /* Utility Classes */
+        .hidden { display: none; }
+        
+        /* OTP Box */
+        .otp-display-box {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px dashed #ffeeba;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .otp-code { font-size: 32px; font-weight: bold; display: block; margin-top: 5px; letter-spacing: 5px; }
+
+        /* Result Box */
+        .res-box { padding: 20px; border-radius: 12px; margin-top: 15px; animation: fadeIn 0.3s; }
+        .success { background: #e8f5e9; color: #27ae60; border: 1px solid #c8e6c9; }
+        .error { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div id="pageLogin" class="card">
+        <h1>🔐 เข้าสู่ระบบ</h1>
+        <p>ระบบ Smart Locker ปลอดภัย</p>
+        <input type="tel" id="loginPhone" placeholder="เบอร์โทรศัพท์ (เช่น 0812345678)" maxlength="10">
+        <div id="msgLogin" style="color:#e74c3c; font-size:14px; margin-top:5px;"></div>
+        <button class="btn-main" onclick="getOTP()">ขอรหัส OTP</button>
+    </div>
+
+    <div id="pageOTP" class="card hidden">
+        <h1>💬 ยืนยันตัวตน</h1>
+        <div id="otpDisplayArea" class="otp-display-box"></div>
+        
+        <input type="text" id="otpInput" placeholder="กรอกรหัส 6 หลักที่เห็น" maxlength="6">
+        <div id="msgOtp" style="color:#e74c3c; font-size:14px; margin-top:5px;"></div>
+        
+        <button class="btn-confirm" onclick="verifyOTP()">ยืนยันรหัส</button>
+        <button class="btn-back" onclick="location.reload()">❌ ยกเลิก / เปลี่ยนเบอร์</button>
+    </div>
+
+    <div id="pageMenu" class="card hidden">
+        <h1>📦 Smart Locker</h1>
+        <p id="welcomeUser">ยินดีต้อนรับ</p>
+        <button class="btn-sender" onclick="nav('sender')">🚚 ผู้ส่ง (ฝากของ)</button>
+        <button class="btn-receiver" onclick="nav('receiver')">🎁 ผู้รับ (รับของ)</button>
+        <button class="btn-back" onclick="location.reload()">ออกจากระบบ</button>
+    </div>
+
+    <div id="pageSender" class="card hidden">
+        <div style="text-align:left;"><button class="btn-back" style="margin:0;" onclick="nav('menu')">⬅ กลับ</button></div>
+        <h2>เลือกตู้ที่ว่าง</h2>
+        <div id="lockerGrid" class="grid">กำลังโหลด...</div>
+        
+        <div id="reserveForm" class="hidden" style="margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
+            <p>ฝากที่ตู้หมายเลข: <b id="targetLocker" style="font-size:22px; color:#e67e22;"></b></p>
+            <input type="tel" id="receiverPhone" placeholder="เบอร์ผู้รับ (4 ตัวท้าย)" maxlength="4">
+            <button class="btn-confirm" onclick="doReserve()">ยืนยันการฝาก</button>
+        </div>
+    </div>
+
+    <div id="pageReceiver" class="card hidden">
+        <div style="text-align:left;"><button class="btn-back" style="margin:0;" onclick="nav('menu')">⬅ กลับ</button></div>
+        <h2>🔍 ค้นหาพัสดุ</h2>
+        <input type="tel" id="searchPhone" placeholder="เบอร์ผู้รับ (4 ตัวท้าย)" maxlength="4">
+        <button class="btn-receiver" onclick="doSearch()">ค้นหาตู้ของฉัน</button>
+        <div id="searchResult"></div>
+    </div>
+
+</div>
+
+<script>
+    // ✅ อัปเดต URL ของคุณเรียบร้อยแล้ว
+    const API_URL = "https://script.google.com/macros/s/AKfycbwcqSbwBWjZqGT7_k-XOIfe6x9Ia9UrdNd4mWquWBLCNl0QmD_p7vtIqN7oABsKGp8HmA/exec";
+
+    // ตัวแปรสำหรับระบบ
+    let myOTP = null;
+    let currentUser = "";
+    let selectedLockerNum = null;
+
+    /* --- ส่วนระบบ Login & OTP --- */
+    function getOTP() {
+        const phone = document.getElementById('loginPhone').value;
+        if(phone.length < 9) {
+            document.getElementById('msgLogin').innerText = "❌ กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง";
+            return;
+        }
+        
+        // สุ่มเลข OTP 6 หลัก
+        myOTP = Math.floor(100000 + Math.random() * 900000);
+        currentUser = phone;
+        
+        // แสดงหน้า OTP พร้อมโชว์รหัสให้เห็น
+        document.getElementById('otpDisplayArea').innerHTML = `รหัส OTP ของคุณคือ<span class="otp-code">${myOTP}</span>`;
+        document.getElementById('msgLogin').innerText = ""; // เคลียร์ error เก่า
+        
+        switchPage('pageOTP');
+    }
+
+    function verifyOTP() {
+        const input = document.getElementById('otpInput').value;
+        if(input == myOTP) {
+            document.getElementById('welcomeUser').innerText = "สวัสดี, คุณ " + currentUser;
+            switchPage('pageMenu');
+        } else {
+            document.getElementById('msgOtp').innerText = "❌ รหัสไม่ถูกต้อง ลองใหม่อีกครั้ง";
+        }
+    }
+
+    /* --- ส่วนระบบ Smart Locker --- */
+    function nav(target) {
+        if(target === 'sender') fetchLockers();
+        if(target === 'receiver') {
+             document.getElementById('searchResult').innerHTML = ""; // เคลียร์ผลการค้นหาเก่า
+             document.getElementById('searchPhone').value = "";
+        }
+        switchPage(target === 'sender' ? 'pageSender' : 'pageReceiver');
+    }
+
+    // ดึงสถานะตู้
+    async function fetchLockers() {
+        const grid = document.getElementById('lockerGrid');
+        grid.innerHTML = "<p>กำลังเชื่อมต่อฐานข้อมูล...</p>";
+        try {
+            const res = await fetch(API_URL + "?action=checkStatus");
+            const data = await res.json();
+            
+            grid.innerHTML = ""; // ล้างข้อความ loading
+            data.forEach(item => {
+                const btn = document.createElement('button');
+                const isFree = item.status === 'Available';
+                
+                btn.className = `l-btn ${isFree ? 'available' : 'occupied'}`;
+                btn.innerHTML = `ตู้ ${item.locker}<br>${isFree ? '✅ ว่าง' : '❌ เต็ม'}`;
+                btn.disabled = !isFree;
+                
+                if(isFree) {
+                    btn.onclick = () => {
+                        selectedLockerNum = item.locker;
+                        document.getElementById('targetLocker').innerText = item.locker;
+                        document.getElementById('reserveForm').classList.remove('hidden');
+                        document.getElementById('reserveForm').scrollIntoView({behavior: 'smooth'});
+                    };
+                }
+                grid.appendChild(btn);
+            });
+        } catch(e) {
+            grid.innerHTML = `<p style="color:red">เชื่อมต่อไม่ได้<br>โปรดเช็ค URL Script</p>`;
+        }
+    }
+
+    // ฝากของ
+    async function doReserve() {
+        const rPhone = document.getElementById('receiverPhone').value;
+        if(rPhone.length < 4) return alert("กรุณากรอกเบอร์ผู้รับ 4 ตัวท้าย");
+        
+        // เปลี่ยนปุ่มเป็น loading
+        const btn = event.target;
+        const oldText = btn.innerText;
+        btn.innerText = "กำลังบันทึก...";
+        btn.disabled = true;
+
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'reserve',
+                    locker: selectedLockerNum,
+                    phone: rPhone
+                })
+            });
+            alert("✅ ฝากของสำเร็จ!");
+            switchPage('pageMenu');
+        } catch(e) {
+            alert("เกิดข้อผิดพลาดในการบันทึก");
+        }
+        
+        btn.innerText = oldText;
+        btn.disabled = false;
+    }
+
+    // ค้นหาพัสดุ
+    async function doSearch() {
+        const sPhone = document.getElementById('searchPhone').value;
+        const resBox = document.getElementById('searchResult');
+        if(sPhone.length < 4) return alert("กรอกเบอร์ 4 ตัวท้าย");
+
+        resBox.innerHTML = "กำลังค้นหา...";
+        try {
+            const res = await fetch(`${API_URL}?action=find&phone=${sPhone}`);
+            const data = await res.json();
+            
+            if(data.found) {
+                resBox.innerHTML = `
+                    <div class="res-box success">
+                        <h3>🎉 พบพัสดุ!</h3>
+                        <p>อยู่ที่ <b>ตู้หมายเลข ${data.locker}</b></p>
+                        <button class="btn-confirm" onclick="clearLocker('${data.locker}')">
+                            📦 ยืนยันรับของ (เคลียร์ตู้)
+                        </button>
+                    </div>`;
+            } else {
+                resBox.innerHTML = `<div class="res-box error">❌ ไม่พบพัสดุ หรือตู้ว่างอยู่</div>`;
+            }
+        } catch(e) {
+            resBox.innerHTML = "ค้นหาล้มเหลว";
+        }
+    }
+
+    // รับของแล้วเคลียร์ตู้
+    async function clearLocker(num) {
+        if(!confirm("ยืนยันว่าได้รับของแล้ว? ระบบจะเคลียร์ตู้ให้ว่าง")) return;
+        
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'clear', locker: num })
+            });
+            alert("ขอบคุณที่ใช้บริการ! ตู้ว่างพร้อมใช้งานแล้ว");
+            switchPage('pageMenu');
+        } catch(e) {
+            alert("เกิดข้อผิดพลาดในการเคลียร์ตู้");
+        }
+    }
+
+    // ฟังก์ชันช่วยสลับหน้า (Helper)
+    function switchPage(pageId) {
+        ['pageLogin', 'pageOTP', 'pageMenu', 'pageSender', 'pageReceiver'].forEach(id => {
+            document.getElementById(id).classList.add('hidden');
+        });
+        document.getElementById(pageId).classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>
